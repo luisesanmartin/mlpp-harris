@@ -9,8 +9,7 @@ import pandas as pd
 
 ## Problem 1: Data Acquisition and Analysis
 
-1. Download reported crime data from Chicago open data portal for 2017 and
-2018
+1. Download reported crime data from Chicago open data portal for 2017 and 2018.
 
 **Answer:**
 
