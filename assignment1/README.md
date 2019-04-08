@@ -19,6 +19,7 @@ We've set a function in the assignment1.py file to help with this:
 ```python3 p1a
 crimes = assignment1.data_on_crimes()
 crimes_df = pd.DataFrame.from_dict(crimes)
+crimes_df
 ```
 Now `crimes_df` is the dataframe with the crimes data.
 
