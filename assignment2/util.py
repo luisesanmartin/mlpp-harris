@@ -64,3 +64,17 @@ def create_dummies(df, column):
 
         df.loc[df[column] == value, column + str(value)] = 1
         df.loc[df[column] != value, column + str(value)] = 0
+
+
+def replace_over_one(df, column):
+    '''
+    Takes a dataframe (df) and a variable in it (column) and replaces
+    the values over one with ones.
+    Inputs:
+        - column (column of a pandas dataframe): the column whose values
+        over one we will replace with ones.
+        - df: the pandas dataframe where column is.
+    Output: nothing. Modifies the df directly.
+    '''
+
+    df.loc[df[column] > 1, column] = 1
