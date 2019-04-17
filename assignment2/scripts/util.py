@@ -45,3 +45,22 @@ def discretize(df, column):
         df.loc[(df[column] >= mini) & (df[column] <= maxi), \
                column + '_quartile'] = i
         xtile += WIDE
+
+
+def create_dummies(df, column):
+    '''
+    Takes a dataframe (df) and a categorical variable in it (column) and
+    creates a dummy for each distinct value of the input categorical
+    variable.
+    Inputs:
+        - column (column of a pandas dataframe): the column we want to
+        discretize. It should be a categorical variable included in df.
+        - df: the pandas dataframe where column is and where we'll add
+        the new dummy variables
+    Output: nothing. Modifies the df directly.       
+    '''
+
+    for value in df[column].unique():
+
+        df.loc[df[column] == value, column + str(value)] = 1
+        df.loc[df[column] != value, column + str(value)] = 0
