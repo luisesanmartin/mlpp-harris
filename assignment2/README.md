@@ -1,4 +1,4 @@
-#Assignment 2 -- Machine Learning Pipeline
+# Assignment 2 -- Machine Learning Pipeline
 This is a brief explanation of this repository's content:
 
 1. **data**: contains the data used for this assignment.
