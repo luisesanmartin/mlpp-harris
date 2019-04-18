@@ -52,6 +52,7 @@ def create_dummies(df, column):
     Takes a dataframe (df) and a categorical variable in it (column) and
     creates a dummy for each distinct value of the input categorical
     variable.
+
     Inputs:
         - column (column of a pandas dataframe): the column we want to
         discretize. It should be a categorical variable included in df.
@@ -62,14 +63,15 @@ def create_dummies(df, column):
 
     for value in df[column].unique():
 
-        df.loc[df[column] == value, column + str(value)] = 1
-        df.loc[df[column] != value, column + str(value)] = 0
+        df.loc[df[column] == value, column + '_' + str(value)] = 1
+        df.loc[df[column] != value, column + '_' + str(value)] = 0
 
 
 def replace_over_one(df, column):
     '''
     Takes a dataframe (df) and a variable in it (column) and replaces
     the values over one with ones.
+
     Inputs:
         - column (column of a pandas dataframe): the column whose values
         over one we will replace with ones.
@@ -78,3 +80,20 @@ def replace_over_one(df, column):
     '''
 
     df.loc[df[column] > 1, column] = 1
+
+
+def discretize_over_zero(df, column):
+    '''
+    Takes a dataframe (df) and a variable in it (column) and creates a
+    dummy indicating the observations that have a value higher than
+    zero.
+
+    Inputs:
+        - column (column of a pandas dataframe): the column whose values
+        we'll take to create the dummy.
+        - df: the pandas dataframe where column is.
+    Output: nothing. Modifies the df directly.
+    '''
+
+    df.loc[df[column] == 0, column + '_over_zero'] = 0
+    df.loc[df[column] > 0, column + '_over_zero'] = 1
