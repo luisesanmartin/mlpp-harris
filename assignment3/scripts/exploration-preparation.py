@@ -1,6 +1,4 @@
 import pandas as pd
-import sklearn.tree as tree
-from sklearn.tree import DecisionTreeClassifier
 
 
 def read(csv_file):
