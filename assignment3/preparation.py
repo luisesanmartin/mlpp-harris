@@ -1,83 +1,65 @@
 import pandas as pd
+import numpy as np
 
 
-def read(csv_file):
+def create_time_label(df, date_posted, date_funded):
     '''
     '''
 
-    return pd.read_csv(csv_file)
+    days60 = pd.DateOffset(days=60)
+
+    df['funded'] = np.where(df[date_funded] <= df[date_posted] + days60, 1, 0)
 
 
-def columns_list(df):
-	'''
-	'''
+def time_based_split(df, time_col, date_threshold, months_range):
+    '''
+    '''
 
-	print(df.columns)
+    date_lower_threshold = pd.to_datetime(date_threshold)
+    date_upper_threshold = date_lower_threshold + \
+                           pd.DateOffset(months=months_range)
+    df_train = df[df[time_col]<=date_lower_threshold]
+    df_test = df[(df[time_col]>date_lower_threshold) \
+              & (df[time_col]<=date_upper_threshold)]
 
+    print('train/test threshold:', date_lower_threshold)
+    print('test upper threshold:', date_upper_threshold)
 
-def columns_types(df):
-	'''
-	'''
-
-	print(df.dtypes)
-
-
-def count_missings(df):
-	'''
-	'''
-
-	total = len(df)
-	for col in df.columns:
-		print(col, 'has', df[col].isna().sum() / total * 100, \
-			'% of missing data points')
+    return df_train, df_test
 
 
-def tabulate(df, col):
-	'''
-	'''
+def to_date(df, column):
+    '''
+    '''
 
-	print(df.groupby(col).size())
-
-
-def correlations(df):
-	'''
-	'''
-
-	df.corr().style.background_gradient(cmap='coolwarm')
+    df[column] = pd.to_datetime(df[column], infer_datetime_format=True)
 
 
-def histograms(df):
-	'''
-	'''
+def discrete_0_1(df, column, value0, value1):
+    '''
+    '''
 
-	df.hist(figsize=(20, 20))
-
-
-def describe(df):
-	'''
-	'''
-
-	for col in df.columns:
-		print(df[col].describe())
+    df[column] = df[column].replace(value0, 0)
+    df[column] = df[column].replace(value1, 1)
+    df[column] = pd.to_numeric(df[column])
 
 
-def duplicates(df):
-	'''
-	'''
+def fill_nas_other(df, column, label):
+    '''
+    '''
 
-	dups = df[df.duplicated(keep=False)]
-	print(len(dups))
-
-
-def duplicates_in_columns(df, columns):
-	'''
-	'''
-
-	dups = df[df.duplicated(columns, keep=False)]
-	print(len(dups))
+    df[column] = df[column].fillna(value=label)
 
 
-def fill_nas(df, column):
+def fill_nas_mode(df, column):
+    '''
+    '''
+
+    mode = df[column].mode()
+    df[column] = df[column].fillna(value=mode)
+
+
+def fill_nas_median(df, column):
     '''
     Replaces the NaN values of a column (column) in a dataframe (df) with
     the value of the column median

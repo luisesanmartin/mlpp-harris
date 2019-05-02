@@ -19,24 +19,24 @@ def boosting(features, label, n=10):
 	return br
 
 
-def bagging(features, label, n=10, samples=0.2, features=1/3):
+def bagging(features, label, n=10, samples=0.2, features_size=1/3):
 	'''
 	'''
 
 	bagging = BaggingClassifier(KNeighborsClassifier(), \
-		      max_samples=samples, max_features=features, n_estimators=n)
+		      max_samples=samples, max_features=features_size, n_estimators=n)
 	bagging.fit(features, label)
 
 	return bagging
 
 
 def random_forest(features, label, n=10, \
-	features='auto', criteria='gini'):
+	features_size='auto', criteria='gini'):
 	'''
 	'''
 
 	rf = RandomForestClassifier(random_state=0, n_estimators=n, \
-		criterion='criteria', max_features=features)
+		criterion='criteria', max_features=features_size)
 	rf.fit(features, label)
 
 	return rf
