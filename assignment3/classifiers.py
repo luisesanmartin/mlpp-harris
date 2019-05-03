@@ -5,18 +5,18 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import BaggingClassifier
-from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import AdaBoostClassifier
 
 
 def boosting(features, label, n=10):
 	'''
 	'''
 
-	br = AdaBoostRegressor(LogisticRegression(random_state=0, \
+	bc = AdaBoostClassifier(LogisticRegression(random_state=0, \
 		solver='liblinear'), n_estimators=n)
-	br.fit(features, label)
+	bc.fit(features, label)
 
-	return br
+	return bc
 
 
 def bagging(features, label, n=10, samples=0.2, features_size=1/3):
@@ -36,7 +36,7 @@ def random_forest(features, label, n=10, \
 	'''
 
 	rf = RandomForestClassifier(random_state=0, n_estimators=n, \
-		criterion='criteria', max_features=features_size)
+		criterion=criteria, max_features=features_size)
 	rf.fit(features, label)
 
 	return rf

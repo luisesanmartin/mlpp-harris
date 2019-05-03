@@ -55,7 +55,7 @@ def fill_nas_mode(df, column):
     '''
     '''
 
-    mode = df[column].mode()
+    mode = df[column].mode().iloc[0]
     df[column] = df[column].fillna(value=mode)
 
 
