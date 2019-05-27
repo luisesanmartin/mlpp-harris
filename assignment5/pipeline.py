@@ -15,7 +15,7 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve
-
+pd.options.mode.chained_assignment = None
 
 def read(csv_file):
     '''
@@ -164,7 +164,7 @@ def create_time_label(df, date1_col, date2_col, n_days):
 
     days = pd.DateOffset(days=n_days)
 
-    df['label'] = np.where(df[date_funded] > df[date_posted] + days, 1, 0)
+    df['label'] = np.where(df[date2_col] > df[date1_col] + days, 1, 0)
 
 
 def time_based_split(df, time_col, date_threshold, gap_days, months_range):
@@ -380,7 +380,7 @@ def discretize_over_zero(df, column):
     df.loc[df[column] > 0, column + '_over_zero'] = 1
 
 
-def boosting(features, label, n=10):
+def boosting(features, label, n=100):
     '''
     Returns an Ada Boosting classifier object from sklearn.
 
