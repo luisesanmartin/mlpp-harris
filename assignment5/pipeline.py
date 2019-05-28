@@ -380,14 +380,14 @@ def discretize_over_zero(df, column):
     df.loc[df[column] > 0, column + '_over_zero'] = 1
 
 
-def boosting(features, label, n=100):
+def boosting(features, label, n=1000):
     '''
     Returns an Ada Boosting classifier object from sklearn.
 
     Inputs:
         - features: a Pandas dataframe with the features
         - label: a Pandas series with the label variable
-        - n: the number of iterations for the classifier (default is 100)
+        - n: the number of iterations for the classifier (default is 1000)
     '''
 
     bc = AdaBoostClassifier(LogisticRegression(random_state=0, \
@@ -567,7 +567,10 @@ def accuracy(classifier, threshold, X_test, y_test):
     '''
 
     pred_scores = get_predictions(classifier, X_test)
-    pred_label = np.where(pred_scores >= threshold, 1, 0)
+    pred_scores.sort_values(ascending=False, inplace=True)
+    pred_scores.reset_index(drop=True, inplace=True)
+    pred_label = np.where(pred_scores.index + 1 <= \
+                          threshold * len(y_test), 1, 0)
     acc = accuracy_score(pred_label, y_test)
 
     return acc
@@ -587,7 +590,10 @@ def precision(classifier, threshold, X_test, y_test):
     '''
 
     pred_scores = get_predictions(classifier, X_test)
-    pred_label = np.where(pred_scores >= threshold, 1, 0)
+    pred_scores.sort_values(ascending=False, inplace=True)
+    pred_scores.reset_index(drop=True, inplace=True)
+    pred_label = np.where(pred_scores.index + 1 <= \
+                          threshold * len(y_test), 1, 0)
     c = confusion_matrix(y_test, pred_label)
     true_negatives, false_positive, false_negatives, true_positives = c.ravel()
     prec = true_positives / (false_positive + true_positives)
@@ -609,7 +615,10 @@ def recall(classifier, threshold, X_test, y_test):
     '''
 
     pred_scores = get_predictions(classifier, X_test)
-    pred_label = np.where(pred_scores >= threshold, 1, 0)
+    pred_scores.sort_values(ascending=False, inplace=True)
+    pred_scores.reset_index(drop=True, inplace=True)
+    pred_label = np.where(pred_scores.index + 1 <= \
+                          threshold * len(y_test), 1, 0)
     c = confusion_matrix(y_test, pred_label)
     true_negatives, false_positive, false_negatives, true_positives = c.ravel()
     rec = true_positives / (false_negatives + true_positives)
@@ -631,7 +640,10 @@ def f1(classifier, threshold, X_test, y_test):
     '''
 
     pred_scores = get_predictions(classifier, X_test)
-    pred_label = np.where(pred_scores >= threshold, 1, 0)
+    pred_scores.sort_values(ascending=False, inplace=True)
+    pred_scores.reset_index(drop=True, inplace=True)
+    pred_label = np.where(pred_scores.index + 1 <= \
+                          threshold * len(y_test), 1, 0)
     score = f1_score(y_test, pred_label)
 
     return score
@@ -705,22 +717,21 @@ def evaluation_table(classifiers, fractions, X_test, y_test):
     df['baseline'] = [simple_classifier(y_test)]*len(df)
 
     # Generating the predictions
-    predictions = []
-    for classifier in classifiers:
-        predictions.append(get_predictions(classifier, X_test))
+    #predictions = []
+    #for classifier in classifiers:
+    #    predictions.append(get_predictions(classifier, X_test))
 
     # Generating the precision and recall columns
     for metric in ['precision', 'recall']:
         
-        for fraction in fractions:
+        for threshold in fractions:
 
             l = []
             i = 0
 
             for classifier in classifiers:
 
-                pred_scores = predictions[i]
-                threshold = pred_scores.quantile(1 - fraction)
+                #pred_scores = predictions[i]
 
                 if metric == 'precision':
 
@@ -732,7 +743,7 @@ def evaluation_table(classifiers, fractions, X_test, y_test):
 
                 i += 1
 
-            col_name = metric + '_' + str(fraction)
+            col_name = metric + '_' + str(threshold)
             df[col_name] = l
 
     # Generating the AUC column
