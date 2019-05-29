@@ -31,9 +31,7 @@ CLASSIFIERS = {'Ada boosting': AdaBoostClassifier,
                'Decision tree': DecisionTreeClassifier,
                'Nearest neighbors': KNeighborsClassifier}
 
-CLASSIFIERS2 = {'Decision tree': DecisionTreeClassifier}
-
-PARAMETERS = \
+PARAMETERS_LONG = \
 {'Ada boosting': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
                                   DecisionTreeClassifier(max_depth=5, criterion='gini'),
                                   DecisionTreeClassifier(max_depth=10, criterion='gini'),
@@ -60,18 +58,56 @@ PARAMETERS = \
                              KNeighborsClassifier(n_neighbors=30)],
              'n_estimators': [10, 100, 500],
              'max_samples': [1/5, 1/3, 1/2],
-             'max_features': [1/5, 1/3, 1/2]},
+             'max_features': [1/5, 1/3, 1/2],
+             'n_jobs': [10]},
  'Random forest': {'n_estimators': [100, 1000, 5000],
                    'criterion': ['gini', 'entropy'],
-                   'max_features': [0.1, 0.2, 1/3]},
+                   'max_features': [0.1, 0.2, 1/3],
+                   'n_jobs': [10]},
  'Support vector machine': {'C': [0.001, 0.01, 0.1, 1, 10],
-                            'penalty': ['l1', 'l2']},
+                            'penalty': ['l1', 'l2'],
+                            'dual': [False]},
  'Logistic regression': {'C': [0.001, 0.01, 0.1, 1, 10],
                          'penalty': ['l1', 'l2']},
  'Decision tree': {'max_depth': [1, 5, 10],
                    'criterion': ['gini', 'entropy'],
                    'min_samples_split': [10, 100, 1000]},
- 'Nearest neighbors': {'n_neighbors': [3, 10, 30]}}
+ 'Nearest neighbors': {'n_neighbors': [3, 10, 30],
+                        'n_jobs': [10]}}
+
+
+PARAMETERS_MID = \
+{'Ada boosting': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
+                                  DecisionTreeClassifier(max_depth=5, criterion='gini'),
+                                  DecisionTreeClassifier(max_depth=1, criterion='entropy'),
+                                  DecisionTreeClassifier(max_depth=5, criterion='entropy'),
+                                  LogisticRegression(C=1.0, penalty='l1'),
+                                  LogisticRegression(C=0.1, penalty='l1'),
+                                  LogisticRegression(C=1.0, penalty='l2'),
+                                  LogisticRegression(C=0.1, penalty='l2')],
+                  'n_estimators': [30, 50, 100]},
+ 'Bagging': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
+                             DecisionTreeClassifier(max_depth=5, criterion='gini'),
+                             DecisionTreeClassifier(max_depth=1, criterion='entropy'),
+                             DecisionTreeClassifier(max_depth=5, criterion='entropy')],
+             'n_estimators': [10, 100],
+             'max_samples': [1/3, 1/2],
+             'max_features': [1/5, 1/3],
+             'n_jobs': [10]},
+ 'Random forest': {'n_estimators': [100, 1000],
+                   'criterion': ['gini', 'entropy'],
+                   'max_features': [0.1, 0.2, 1/3],
+                   'n_jobs': [10]},
+ 'Support vector machine': {'C': [0.001, 0.01, 0.1, 1, 10],
+                            'penalty': ['l1', 'l2'],
+                            'dual': [False]},
+ 'Logistic regression': {'C': [0.001, 0.01, 0.1, 1, 10],
+                         'penalty': ['l1', 'l2']},
+ 'Decision tree': {'max_depth': [1, 5, 10],
+                   'criterion': ['gini', 'entropy'],
+                   'min_samples_split': [10, 100, 1000]},
+ 'Nearest neighbors': {'n_neighbors': [1, 3],
+                       'n_jobs': [10]}}
 
 
 def read(csv_file):
