@@ -7,6 +7,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
@@ -31,28 +32,26 @@ CLASSIFIERS = {'Ada boosting': AdaBoostClassifier,
                'Nearest neighbors': KNeighborsClassifier}
 
 PARAMETERS = \
-{'Ada boosting': {'base_estimator': [LogisticRegression(C=10.0, penalty='l1'),
+{'Ada boosting': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
+                                  DecisionTreeClassifier(max_depth=5, criterion='gini'),
+                                  DecisionTreeClassifier(max_depth=10, criterion='gini'),
+                                  DecisionTreeClassifier(max_depth=1, criterion='entropy'),
+                                  DecisionTreeClassifier(max_depth=5, criterion='entropy'),
+                                  DecisionTreeClassifier(max_depth=10, criterion='entropy'),
+                                  LogisticRegression(C=10.0, penalty='l1'),
                                   LogisticRegression(C=1.0, penalty='l1'),
                                   LogisticRegression(C=0.1, penalty='l1'),
                                   LogisticRegression(C=0.01, penalty='l1'),
                                   LogisticRegression(C=10.0, penalty='l2'),
                                   LogisticRegression(C=1.0, penalty='l2'),
                                   LogisticRegression(C=0.1, penalty='l2'),
-                                  LogisticRegression(C=0.01, penalty='l2'),
-                                  LinearSVC(C=10.0, penalty='l1'),
-                                  LinearSVC(C=1.0, penalty='l1'),
-                                  LinearSVC(C=0.1, penalty='l1'),
-                                  LinearSVC(C=0.01, penalty='l1'),
-                                  LinearSVC(C=10.0, penalty='l2'),
-                                  LinearSVC(C=1.0, penalty='l2'),
-                                  LinearSVC(C=0.1, penalty='l2'),
-                                  LinearSVC(C=0.01, penalty='l2')],
+                                  LogisticRegression(C=0.01, penalty='l2')],
                   'n_estimators': [30, 50, 100]},
  'Bagging': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
                              DecisionTreeClassifier(max_depth=5, criterion='gini'),
                              DecisionTreeClassifier(max_depth=10, criterion='gini'),
                              DecisionTreeClassifier(max_depth=1, criterion='entropy'),
-                             DecisionTreeClassifier(max_depth=15, criterion='entropy'),
+                             DecisionTreeClassifier(max_depth=5, criterion='entropy'),
                              DecisionTreeClassifier(max_depth=10, criterion='entropy'),
                              KNeighborsClassifier(n_neighbors=3),
                              KNeighborsClassifier(n_neighbors=10),
