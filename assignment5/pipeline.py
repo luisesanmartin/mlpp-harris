@@ -626,11 +626,13 @@ def evaluation_table(classifiers, parameters, datasets, fractions, \
     
     # Counting the total number of models -- for on-the-run progress reporting
     total = 0
+    n_ datasets = len(datasets)
     for clf in classifiers:
         clf_n = 1
         for parameter in parameters[clf]:
             clf_n = clf_n * len(parameters[clf][parameter])
         total += clf_n
+    total = total * n_datasets
     
     # Starting with the loop
     i = 1
