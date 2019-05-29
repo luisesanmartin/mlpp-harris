@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import warnings
 import matplotlib.pyplot as plt
 import sklearn.tree as tree
 from sklearn.neighbors import KNeighborsClassifier
@@ -15,7 +16,62 @@ from sklearn.metrics import f1_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import auc
 from sklearn.metrics import roc_curve
+from sklearn.model_selection import ParameterGrid
+
+
 pd.options.mode.chained_assignment = None
+warnings.filterwarnings("ignore", category=Warning)
+
+CLASSIFIERS = {'Ada boosting': AdaBoostClassifier,
+               'Bagging': BaggingClassifier,
+               'Random forest': RandomForestClassifier,
+               'Support vector machine': LinearSVC,
+               'Logistic regression': LogisticRegression,
+               'Decision tree': DecisionTreeClassifier,
+               'Nearest neighbors': KNeighborsClassifier}
+
+PARAMETERS = \
+{'Ada boosting': {'base_estimator': [LogisticRegression(C=10.0, penalty='l1'),
+                                  LogisticRegression(C=1.0, penalty='l1'),
+                                  LogisticRegression(C=0.1, penalty='l1'),
+                                  LogisticRegression(C=0.01, penalty='l1'),
+                                  LogisticRegression(C=10.0, penalty='l2'),
+                                  LogisticRegression(C=1.0, penalty='l2'),
+                                  LogisticRegression(C=0.1, penalty='l2'),
+                                  LogisticRegression(C=0.01, penalty='l2'),
+                                  LinearSVC(C=10.0, penalty='l1'),
+                                  LinearSVC(C=1.0, penalty='l1'),
+                                  LinearSVC(C=0.1, penalty='l1'),
+                                  LinearSVC(C=0.01, penalty='l1'),
+                                  LinearSVC(C=10.0, penalty='l2'),
+                                  LinearSVC(C=1.0, penalty='l2'),
+                                  LinearSVC(C=0.1, penalty='l2'),
+                                  LinearSVC(C=0.01, penalty='l2')],
+                  'n_estimators': [30, 50, 100]},
+ 'Bagging': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
+                             DecisionTreeClassifier(max_depth=5, criterion='gini'),
+                             DecisionTreeClassifier(max_depth=10, criterion='gini'),
+                             DecisionTreeClassifier(max_depth=1, criterion='entropy'),
+                             DecisionTreeClassifier(max_depth=15, criterion='entropy'),
+                             DecisionTreeClassifier(max_depth=10, criterion='entropy'),
+                             KNeighborsClassifier(n_neighbors=3),
+                             KNeighborsClassifier(n_neighbors=10),
+                             KNeighborsClassifier(n_neighbors=30)],
+             'n_estimators': [10, 100, 500],
+             'max_samples': [1/5, 1/3, 1/2],
+             'max_features': [1/5, 1/3, 1/2]},
+ 'Random forest': {'n_estimators': [100, 1000, 5000],
+                   'criterion': ['gini', 'entropy'],
+                   'max_features': [0.1, 0.2, 1/3]},
+ 'Support vector machine': {'C': [0.001, 0.01, 0.1, 1, 10],
+                            'penalty': ['l1', 'l2']},
+ 'Logistic regression': {'C': [0.001, 0.01, 0.1, 1, 10],
+                         'penalty': ['l1', 'l2']},
+ 'Decision tree': {'max_depth': [1, 5, 10],
+                   'criterion': ['gini', 'entropy'],
+                   'min_samples_split': [10, 100, 1000]},
+ 'Nearest neighbors': {'n_neighbors': [3, 10, 30]}}
+
 
 def read(csv_file):
     '''
@@ -27,7 +83,6 @@ def read(csv_file):
 
     return pd.read_csv(csv_file)
 
-
 def columns_list(df):
     '''
     Prints a list of the columns of a dataframe. No output is returned.
@@ -37,7 +92,6 @@ def columns_list(df):
     '''
 
     print(df.columns)
-
 
 def count_obs(df):
     '''
@@ -49,7 +103,6 @@ def count_obs(df):
 
     print(len(df))
 
-
 def columns_types(df):
     '''
     Prints the type of all columns in a dataframe.
@@ -59,7 +112,6 @@ def columns_types(df):
     '''
 
     print(df.dtypes)
-
 
 def count_missings(df):
     '''
@@ -74,7 +126,6 @@ def count_missings(df):
         print(col, 'has', df[col].isna().sum() / total * 100, \
             '% of missing data points')
 
-
 def tabulate(df, col):
     '''
     Tabulates the column (col) of a dataframe (df), and prints the result.
@@ -86,7 +137,6 @@ def tabulate(df, col):
 
     print(df.groupby(col).size())
 
-
 def correlations(df):
     '''
     Prints the correlation table of all the columns in a dataframe.
@@ -96,7 +146,6 @@ def correlations(df):
     '''
 
     df.corr().style.background_gradient(cmap='coolwarm')
-
 
 def histograms(df):
     '''
@@ -108,7 +157,6 @@ def histograms(df):
 
     df.hist(figsize=(20, 20))
 
-
 def describe(df):
     '''
     Prints some descriptive statistics of all the columns of a dataframe.
@@ -119,7 +167,6 @@ def describe(df):
 
     for col in df.columns:
         print(df[col].describe())
-
 
 def duplicates(df):
     '''
@@ -133,7 +180,6 @@ def duplicates(df):
     dups = df[df.duplicated(keep=False)]
     print(len(dups))
 
-
 def duplicates_in_columns(df, columns):
     '''
     Prints the number of observations with the same values for a certain
@@ -146,7 +192,6 @@ def duplicates_in_columns(df, columns):
 
     dups = df[df.duplicated(columns, keep=False)]
     print(len(dups))
-
 
 def create_time_label(df, date1_col, date2_col, n_days):
     '''
@@ -165,7 +210,6 @@ def create_time_label(df, date1_col, date2_col, n_days):
     days = pd.DateOffset(days=n_days)
 
     df['label'] = np.where(df[date2_col] > df[date1_col] + days, 1, 0)
-
 
 def time_based_split(df, time_col, date_threshold, gap_days, months_range):
     '''
@@ -208,7 +252,6 @@ def time_based_split(df, time_col, date_threshold, gap_days, months_range):
 
     return df_train, df_test
 
-
 def to_date(df, column):
     '''
     Transforms a column (column) of a dataframe (df) in date type.
@@ -222,7 +265,6 @@ def to_date(df, column):
     '''
 
     df[column] = pd.to_datetime(df[column], infer_datetime_format=True)
-
 
 def discrete_0_1(df, column, value0, value1):
     '''
@@ -242,7 +284,6 @@ def discrete_0_1(df, column, value0, value1):
     df[column] = df[column].replace(value1, 1)
     df[column] = pd.to_numeric(df[column])
 
-
 def fill_nas_other(df, column, label):
     '''
     Fills the NaN values of a column (column) in a dataframe (df) with
@@ -259,7 +300,6 @@ def fill_nas_other(df, column, label):
     '''
 
     df[column] = df[column].fillna(value=label)
-
 
 def fill_nas_mode(df, column):
     '''
@@ -279,7 +319,6 @@ def fill_nas_mode(df, column):
     mode = df[column].mode().iloc[0]
     df[column] = df[column].fillna(value=mode)
 
-
 def fill_nas_median(df, column):
     '''
     Replaces the NaN values of a column (column) in a dataframe (df) with
@@ -297,7 +336,6 @@ def fill_nas_median(df, column):
 
     median = df[column].quantile()
     df[column] = df[column].fillna(value=median)
-
 
 def discretize(df, column):
     '''
@@ -327,7 +365,6 @@ def discretize(df, column):
                column + '_quartile'] = i
         xtile += WIDE
 
-
 def create_dummies(df, column):
     '''
     Takes a dataframe (df) and a categorical variable in it (column) and
@@ -347,7 +384,6 @@ def create_dummies(df, column):
         df.loc[df[column] == value, column + '_' + str(value)] = 1
         df.loc[df[column] != value, column + '_' + str(value)] = 0
 
-
 def replace_over_one(df, column):
     '''
     Takes a dataframe (df) and a variable in it (column) and replaces
@@ -361,7 +397,6 @@ def replace_over_one(df, column):
     '''
 
     df.loc[df[column] > 1, column] = 1
-
 
 def discretize_over_zero(df, column):
     '''
@@ -379,136 +414,6 @@ def discretize_over_zero(df, column):
     df.loc[df[column] == 0, column + '_over_zero'] = 0
     df.loc[df[column] > 0, column + '_over_zero'] = 1
 
-
-def boosting(features, label, n=1000):
-    '''
-    Returns an Ada Boosting classifier object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - n: the number of iterations for the classifier (default is 1000)
-    '''
-
-    bc = AdaBoostClassifier(LogisticRegression(random_state=0, \
-        solver='liblinear'), n_estimators=n)
-    bc.fit(features, label)
-
-    return bc
-
-
-def bagging(features, label, n=1000, samples=0.2, features_size=1/3):
-    '''
-    Returns a bagging classifier object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - n: the number of classifiers in the model (default is 1000)
-        - samples: the fraction representing the size of the samples
-                   used for each model
-        - features_size: the fraction represening the number of the features
-                         used for each model, out of the total number of
-                         features (default is 1/3)
-    '''
-
-    bagging = BaggingClassifier(KNeighborsClassifier(), \
-              max_samples=samples, max_features=features_size, n_estimators=n)
-    bagging.fit(features, label)
-
-    return bagging
-
-
-def random_forest(features, label, n=1000, \
-    features_size='auto', criteria='gini'):
-    '''
-    Returns a random forest model object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - n: the number of decision trees in the model (default is 1000)
-        - features_size: the fraction represening the number of the features
-                         used for each split, out of the total number of
-                         features (default is sqrt(n_features))
-        - criteria: node split criteria (default is gini)
-    '''
-
-    rf = RandomForestClassifier(random_state=0, n_estimators=n, \
-        criterion=criteria, max_features=features_size)
-    rf.fit(features, label)
-
-    return rf
-
-
-def svm(features, label, c_value=1.0):
-    '''
-    Returns a support vector machine classifier object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - c_value: penalty parameter of the error term (default is 1.0)
-    '''
-
-    svm = LinearSVC(random_state= 0, C=c_value)
-    svm.fit(features, label)
-
-    return svm
-
-
-def logistic_regression(features, label, norm='l1', c_value=1.0):
-    '''
-    Returns a logistic regression object from sklearn
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - norm: norm used for penalization of overfitting (default is 'l1')
-        - c_value: inverse of regularization stregnth (default is 1.0)
-    '''
-
-    lr = LogisticRegression(random_state=0, solver='liblinear', \
-        penalty=norm, C=c_value)
-    lr.fit(features, label)
-
-    return lr
-
-
-def decision_tree(features, label, depth=5, criteria='gini'):
-    '''
-    Returns a decision tree classifier object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - depth: max depth of the tree (default is 5)
-        - criteria: split decision criteria (default is gini)
-    '''
-
-    dec_tree = DecisionTreeClassifier(max_depth=depth, criterion=criteria)
-    dec_tree.fit(features, label)
-
-    return dec_tree
-
-
-def nearest_neighbors(features, label, k=3, distance='minkowski'):
-    '''
-    Returns a nearest neighbor classifier object from sklearn.
-
-    Inputs:
-        - features: a Pandas dataframe with the features
-        - label: a Pandas series with the label variable
-        - k: number of neighbors taken for classification (default is 3)
-        - distance: distance measurement (default is minkowski)
-    '''
-
-    nn = KNeighborsClassifier(n_neighbors=k, metric=distance)
-    nn.fit(features, label)
-
-    return nn
-
-
 def get_predictions(classifier, X_test):
     '''
     Returns a Pandas Series with the prediction scores.
@@ -525,7 +430,6 @@ def get_predictions(classifier, X_test):
         pred_scores = pd.Series(classifier.decision_function(X_test))
 
     return pred_scores
-
 
 def simple_classifier(y_test):
     '''
@@ -552,7 +456,6 @@ def simple_classifier(y_test):
 
         return acc
 
-
 def accuracy(classifier, threshold, X_test, y_test):
     '''
     Returns the accuracy (float) of a classifier given a certain threshold,
@@ -560,7 +463,8 @@ def accuracy(classifier, threshold, X_test, y_test):
 
     Inputs:
         - classifier: the model we are using
-        - threshold: the threshold we use to calculate accuracy
+        - threshold: a fraction that denotes the upper percent of the
+                     population that will have positively predicted labels
         - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: accuracy (float)
@@ -575,7 +479,6 @@ def accuracy(classifier, threshold, X_test, y_test):
 
     return acc
 
-
 def precision(classifier, threshold, X_test, y_test):
     '''
     Returns the precision (float) of a classifier given a certain
@@ -583,8 +486,8 @@ def precision(classifier, threshold, X_test, y_test):
 
     Inputs:
         - classifier: the model we are using
-        - threshold: the threshold we use to calculate precision
-        - X_test: a Pandas dataframe with the features of the test set
+        - threshold: a fraction that denotes the upper percent of the
+                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: precision (float)
     '''
@@ -600,7 +503,6 @@ def precision(classifier, threshold, X_test, y_test):
 
     return prec
 
-
 def recall(classifier, threshold, X_test, y_test):
     '''
     Returns the recall (float) of a classifier given a certain
@@ -608,8 +510,8 @@ def recall(classifier, threshold, X_test, y_test):
 
     Inputs:
         - classifier: the model we are using
-        - threshold: the threshold we use to calculate recall
-        - X_test: a Pandas dataframe with the features of the test set
+        - threshold: a fraction that denotes the upper percent of the
+                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: recall (float)
     '''
@@ -625,7 +527,6 @@ def recall(classifier, threshold, X_test, y_test):
 
     return rec
 
-
 def f1(classifier, threshold, X_test, y_test):
     '''
     Returns the f1 score (float) of a classifier given a certain
@@ -633,8 +534,8 @@ def f1(classifier, threshold, X_test, y_test):
 
     Inputs:
         - classifier: the model we are using
-        - threshold: the threshold we use to calculate the f1 score
-        - X_test: a Pandas dataframe with the features of the test set
+        - threshold: a fraction that denotes the upper percent of the
+                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: f1 score (float)
     '''
@@ -647,7 +548,6 @@ def f1(classifier, threshold, X_test, y_test):
     score = f1_score(y_test, pred_label)
 
     return score
-
 
 def area_under_curve(classifier, X_test, y_test):
     '''
@@ -666,7 +566,6 @@ def area_under_curve(classifier, X_test, y_test):
     area = auc(fpr, tpr)
 
     return area
-
 
 def precision_recall_curves(classifier, X_test, y_test):
     '''
@@ -693,7 +592,8 @@ def precision_recall_curves(classifier, X_test, y_test):
     
     return plt
 
-def evaluation_table(classifiers, fractions, X_test, y_test):
+def evaluation_table(classifiers, parameters, datasets, fractions, \
+                     features, label):
     '''
     (Please notice that this function might take a while to run)
 
@@ -702,54 +602,73 @@ def evaluation_table(classifiers, fractions, X_test, y_test):
     is evaluated on the same features and the same label.
 
     Inputs:
-        - classifiers: a list of the classifiers we want to evaluate
+        - classifiers: a dictionary with the (untrained) classifiers 
+                       we want to use
+        - parameters: a dictionary with the parameters we want to try out.
+                      Each key must be associated with a key from the
+                      classifiers dictionary
+        - datasets: a dictionary of pairs of datasets - training and
+                    testing sets
         - fractions: a list of floats where each number denotes the upper
                      percent of the population for which the precision and
                      recall will be evaluated
-        - X_test: a Pandas dataframe with the features of the test set
-        - y_test: a Pandas series with the label of the test set
+        - features: the list of features we want to use for all models
+        - label: the label we want to use for all models
+
     Output: a Pandas dataframe - the evaluation table
     '''
 
-    # Generating the df and adding the first columns
-    df = pd.DataFrame()
-    df['classifier'] = classifiers
-    df['baseline'] = [simple_classifier(y_test)]*len(df)
+    # Generating the df
+    precision_cols = ['precision_at_' + str(i) for i in fractions]
+    recall_cols = ['recall_at_' + str(i) for i in fractions]
+    df = pd.DataFrame(columns=['Exact classifier', 'classifier', \
+                               'parameters', 'dataset','baseline'] \
+                               + precision_cols + recall_cols + ['AUC ROC'])
+    
+    # Counting the total number of models -- for on-the-run progress reporting
+    total = 0
+    for clf in classifiers:
+        clf_n = 1
+        for parameter in parameters[clf]:
+            clf_n = clf_n * len(parameters[clf][parameter])
+        total += clf_n
+    
+    # Starting with the loop
+    i = 1
+    for dataset in datasets:
 
-    # Generating the predictions
-    #predictions = []
-    #for classifier in classifiers:
-    #    predictions.append(get_predictions(classifier, X_test))
+        # Generating datasets
+        train_set, test_set = datasets[dataset]
+        train_X = train_set[features]
+        train_y = train_set[label]
+        test_X = test_set[features]
+        test_y = test_set[label]
 
-    # Generating the precision and recall columns
-    for metric in ['precision', 'recall']:
-        
-        for threshold in fractions:
+        baseline = simple_classifier(test_y)
 
-            l = []
-            i = 0
+        for classifier in classifiers:
 
-            for classifier in classifiers:
+            parameters_list = list(ParameterGrid(parameters[classifier]))
 
-                #pred_scores = predictions[i]
+            for parameter in parameters_list:
 
-                if metric == 'precision':
-
-                    l.append(precision(classifier, threshold, X_test, y_test))
-
-                else:
-
-                    l.append(recall(classifier, threshold, X_test, y_test))
-
+                # Progress reporting
+                print('\nRunning model', i, 'out of', total)
+                print('Progress:', round(i/total*100, 1), '%')
                 i += 1
 
-            col_name = metric + '_' + str(threshold)
-            df[col_name] = l
+                # Estimating models and metrics
+                clf = classifiers[classifier](**parameter)
+                model = clf.fit(train_X, train_y)
+                precision_metrics = [precision(model, fraction, 
+                                     test_X, test_y) for fraction in fractions]
+                recall_metrics = [recall(model, fraction, test_X, test_y) \
+                                  for fraction in fractions]
 
-    # Generating the AUC column
-    auc_values = []
-    for classifier in classifiers:
-        auc_values.append(area_under_curve(classifier, X_test, y_test))
-    df['auc_roc'] = auc_values
+                # Appending results
+                df.loc[len(df)] = [str(clf), classifier, parameter, dataset,
+                                   baseline] + precision_metrics + \
+                                   recall_metrics + \
+                                   [area_under_curve(model, test_X, test_y)]
     
     return df
