@@ -31,6 +31,8 @@ CLASSIFIERS = {'Ada boosting': AdaBoostClassifier,
                'Decision tree': DecisionTreeClassifier,
                'Nearest neighbors': KNeighborsClassifier}
 
+CLASSIFIERS2 = {'Decision tree': DecisionTreeClassifier}
+
 PARAMETERS = \
 {'Ada boosting': {'base_estimator': [DecisionTreeClassifier(max_depth=1, criterion='gini'),
                                   DecisionTreeClassifier(max_depth=5, criterion='gini'),
@@ -486,7 +488,8 @@ def precision(classifier, threshold, X_test, y_test):
     Inputs:
         - classifier: the model we are using
         - threshold: a fraction that denotes the upper percent of the
-                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
+                     population that will have positively predicted labels
+        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: precision (float)
     '''
@@ -510,7 +513,8 @@ def recall(classifier, threshold, X_test, y_test):
     Inputs:
         - classifier: the model we are using
         - threshold: a fraction that denotes the upper percent of the
-                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
+                     population that will have positively predicted labels
+        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: recall (float)
     '''
@@ -534,7 +538,8 @@ def f1(classifier, threshold, X_test, y_test):
     Inputs:
         - classifier: the model we are using
         - threshold: a fraction that denotes the upper percent of the
-                     population that will have positively predicted labels        - X_test: a Pandas dataframe with the features of the test set
+                     population that will have positively predicted labels
+        - X_test: a Pandas dataframe with the features of the test set
         - y_test: a Pandas series with the label of the test set
     Output: f1 score (float)
     '''
@@ -626,7 +631,7 @@ def evaluation_table(classifiers, parameters, datasets, fractions, \
     
     # Counting the total number of models -- for on-the-run progress reporting
     total = 0
-    n_ datasets = len(datasets)
+    n_datasets = len(datasets)
     for clf in classifiers:
         clf_n = 1
         for parameter in parameters[clf]:
