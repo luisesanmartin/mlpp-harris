@@ -680,6 +680,7 @@ def evaluation_table(classifiers, parameters, datasets, fractions, \
     for dataset in datasets:
 
         # Generating datasets
+        print('Dataset:', dataset)
         train_set, test_set = datasets[dataset]
         train_X = train_set[features]
         train_y = train_set[label]
