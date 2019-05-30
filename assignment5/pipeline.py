@@ -458,13 +458,13 @@ def get_predictions(classifier, X_test):
     Inputs:
         - classifier object
         - X_test: test dataset (Pandas)
-    Output: Pandas series with the prediction scores
+    Output: Array with the prediction scores
     '''
 
     if hasattr(classifier, 'predict_proba'):
-        pred_scores = pd.Series(classifier.predict_proba(X_test)[:,1])
+        pred_scores = classifier.predict_proba(X_test)[:,1]
     else:
-        pred_scores = pd.Series(classifier.decision_function(X_test))
+        pred_scores = classifier.decision_function(X_test)
 
     return pred_scores
 
@@ -507,12 +507,14 @@ def accuracy(classifier, threshold, X_test, y_test):
     Output: accuracy (float)
     '''
 
-    pred_scores = get_predictions(classifier, X_test)
-    pred_scores.sort_values(ascending=False, inplace=True)
-    pred_scores.reset_index(drop=True, inplace=True)
-    pred_label = np.where(pred_scores.index + 1 <= \
-                          threshold * len(y_test), 1, 0)
-    acc = accuracy_score(pred_label, y_test)
+    df = pd.DataFrame()
+    df['pred_scores'] = get_predictions(classifier, X_test)
+    df['y_test'] = y_test.reset_index(drop=True)
+    df.sort_values(by=['pred_scores'], ascending=False, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    df['pred_label'] = np.where(df.index + 1 <= \
+                                threshold * len(y_test), 1, 0)
+    acc = accuracy_score(df['pred_label'], df['y_test'])
 
     return acc
 
@@ -530,12 +532,14 @@ def precision(classifier, threshold, X_test, y_test):
     Output: precision (float)
     '''
 
-    pred_scores = get_predictions(classifier, X_test)
-    pred_scores.sort_values(ascending=False, inplace=True)
-    pred_scores.reset_index(drop=True, inplace=True)
-    pred_label = np.where(pred_scores.index + 1 <= \
-                          threshold * len(y_test), 1, 0)
-    c = confusion_matrix(y_test, pred_label)
+    df = pd.DataFrame()
+    df['pred_scores'] = get_predictions(classifier, X_test)
+    df['y_test'] = y_test.reset_index(drop=True)
+    df.sort_values(by=['pred_scores'], ascending=False, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    df['pred_label'] = np.where(df.index + 1 <= \
+                                threshold * len(y_test), 1, 0)
+    c = confusion_matrix(df['y_test'], df['pred_label'])
     true_negatives, false_positive, false_negatives, true_positives = c.ravel()
     prec = true_positives / (false_positive + true_positives)
 
@@ -555,12 +559,14 @@ def recall(classifier, threshold, X_test, y_test):
     Output: recall (float)
     '''
 
-    pred_scores = get_predictions(classifier, X_test)
-    pred_scores.sort_values(ascending=False, inplace=True)
-    pred_scores.reset_index(drop=True, inplace=True)
-    pred_label = np.where(pred_scores.index + 1 <= \
-                          threshold * len(y_test), 1, 0)
-    c = confusion_matrix(y_test, pred_label)
+    df = pd.DataFrame()
+    df['pred_scores'] = get_predictions(classifier, X_test)
+    df['y_test'] = y_test.reset_index(drop=True)
+    df.sort_values(by=['pred_scores'], ascending=False, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    df['pred_label'] = np.where(df.index + 1 <= \
+                                threshold * len(y_test), 1, 0)
+    c = confusion_matrix(df['y_test'], df['pred_label'])
     true_negatives, false_positive, false_negatives, true_positives = c.ravel()
     rec = true_positives / (false_negatives + true_positives)
 
@@ -580,12 +586,14 @@ def f1(classifier, threshold, X_test, y_test):
     Output: f1 score (float)
     '''
 
-    pred_scores = get_predictions(classifier, X_test)
-    pred_scores.sort_values(ascending=False, inplace=True)
-    pred_scores.reset_index(drop=True, inplace=True)
-    pred_label = np.where(pred_scores.index + 1 <= \
-                          threshold * len(y_test), 1, 0)
-    score = f1_score(y_test, pred_label)
+    df = pd.DataFrame()
+    df['pred_scores'] = get_predictions(classifier, X_test)
+    df['y_test'] = y_test.reset_index(drop=True)
+    df.sort_values(by=['pred_scores'], ascending=False, inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    df['pred_label'] = np.where(df.index + 1 <= \
+                                threshold * len(y_test), 1, 0)
+    score = f1_score(df['y_test'], df['pred_label'])
 
     return score
 
